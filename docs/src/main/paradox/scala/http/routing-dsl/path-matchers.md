@@ -1,3 +1,10 @@
+@@@ div { .group-java }
+
+This DSL is only relevant when using the Scala API.
+
+@@@
+
+@@@ div { .group-scala }
 # The PathMatcher DSL
 
 For being able to work with the @ref[PathDirectives](directives/path-directives/index.md) effectively you should have some understanding of the
@@ -182,3 +189,5 @@ how to use them.
 ## Examples
 
 @@snip [PathDirectivesExamplesSpec.scala]($test$/scala/docs/http/scaladsl/server/directives/PathDirectivesExamplesSpec.scala) { #path-dsl }
+
+@@@

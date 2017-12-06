@@ -19,6 +19,9 @@ addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.9.0") // for advan
 addSbtPlugin("io.spray" % "sbt-boilerplate" % "0.6.1")
 addSbtPlugin("org.foundweekends" % "sbt-bintray" % "0.5.1")
 addSbtPlugin("com.lightbend.sbt" % "sbt-javaagent" % "0.1.4")
+// From https://github.com/lightbend/paradox/pull/170
+// remember to 'sbt ^publishLocal':
+addSbtPlugin("com.lightbend.paradox" % "sbt-paradox" % "0.3.2-SNAPSHOT")
 addSbtPlugin("com.lightbend.akka" % "sbt-paradox-akka" % "0.4")
 addSbtPlugin("com.lightbend" % "sbt-whitesource" % "0.1.6")
 
