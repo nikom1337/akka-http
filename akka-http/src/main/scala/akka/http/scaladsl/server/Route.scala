@@ -32,7 +32,7 @@ object Route {
    *    using the ``~`` on routes or the [[Directive.|]] operator on directives.
    */
   def seal(route: Route)(implicit
-    routingSettings: RoutingSettings,
+                         routingSettings: RoutingSettings,
                          parserSettings:   ParserSettings   = null,
                          rejectionHandler: RejectionHandler = RejectionHandler.default,
                          exceptionHandler: ExceptionHandler = null): Route = {

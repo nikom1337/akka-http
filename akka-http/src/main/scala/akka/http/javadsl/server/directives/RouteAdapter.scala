@@ -9,13 +9,13 @@ import akka.actor.ActorSystem
 import akka.http.javadsl.model.HttpRequest
 import akka.http.javadsl.model.HttpResponse
 import akka.http.impl.util.JavaMapping.Implicits._
-import akka.http.javadsl.server.{ ExceptionHandler, RejectionHandler, Route, RoutingJavaMapping }
+import akka.http.javadsl.server._
 import RoutingJavaMapping._
 import akka.annotation.InternalApi
-import akka.http.javadsl.settings.{ ParserSettings, RoutingSettings }
+import akka.http.javadsl.settings.{ParserSettings, RoutingSettings}
 import akka.http.scaladsl
 import akka.http.scaladsl.server.RouteConcatenation._
-import akka.stream.{ Materializer, javadsl }
+import akka.stream.{Materializer, javadsl}
 import akka.stream.scaladsl.Flow
 
 /** INTERNAL API */
@@ -55,8 +55,18 @@ final class RouteAdapter(val delegate: akka.http.scaladsl.server.Route) extends 
       exceptionHandler.asScala))
   }
 
-  override def toString = s"akka.http.javadsl.server.Route($delegate)"
+  override def seal(requestContext: RequestContext, rejectionHandler: RejectionHandler, exceptionHandler: ExceptionHandler, system: ActorSystem): Route = {
+    implicit val s = system
+    implicit val m = requestContext.getMaterializer
 
+    RouteAdapter(scaladsl.server.Route.seal(delegate)(
+      requestContext.getSettings.asScala,
+      requestContext.getParserSettings.asScala,
+      rejectionHandler.asScala,
+      exceptionHandler.asScala))
+  }
+
+  override def toString = s"akka.http.javadsl.server.Route($delegate)"
 }
 
 object RouteAdapter {

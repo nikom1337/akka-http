@@ -71,5 +71,11 @@ trait Route {
     system:           ActorSystem,
     materializer:     Materializer): Route
 
+  def seal(
+    requestContext: RequestContext,
+    rejectionHandler: RejectionHandler,
+    exceptionHandler: ExceptionHandler,
+    system:           ActorSystem): Route
+
   def orElse(alternative: Route): Route
 }
