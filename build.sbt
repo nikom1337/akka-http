@@ -1,13 +1,20 @@
 import akka._
 import akka.ValidatePullRequest._
 import AkkaDependency._
-import Dependencies.{ h2specName, h2specExe }
+import Dependencies.{h2specExe, h2specName}
 import com.typesafe.sbt.SbtMultiJvm.MultiJvmKeys.MultiJvm
 import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 import java.nio.file.Files
-import java.nio.file.attribute.{ PosixFileAttributeView, PosixFilePermission }
+import java.nio.file.attribute.{PosixFileAttributeView, PosixFilePermission}
+
+import akka.ParadoxSupport.{SignatureDirective, UnidocDirective}
+import com.lightbend.paradox.markdown.Writer
 import sbtdynver.GitDescribeOutput
 import spray.boilerplate.BoilerplatePlugin
+
+import scala.collection.JavaConverters._
+
+import _root_.io.github.lukehutch.fastclasspathscanner.FastClasspathScanner
 
 inThisBuild(Def.settings(
   organization := "com.typesafe.akka",
@@ -244,6 +251,7 @@ lazy val docs = project("docs")
     httpCore, http, httpXml, http2Support, httpMarshallersJava, httpMarshallersScala, httpCaching,
     httpTests % "compile;test->test", httpTestkit % "compile;test->test"
   )
+  .settings(unmanagedSources in Test := (baseDirectory.value / ".." / "project").**("ParadoxSupport.scala").get)
   .settings(Dependencies.docs)
   .settings(
     name := "akka-http-docs",
@@ -287,6 +295,20 @@ lazy val docs = project("docs")
     additionalTasks in ValidatePR += paradox in Compile,
     deployRsyncArtifact := List((paradox in Compile).value -> s"www/docs/akka-http/${version.value}")
   )
-  .settings(ParadoxSupport.paradoxWithCustomDirectives)
+  .settings(
+    Seq(
+      paradoxDirectives ++= Def.taskDyn {
+        val log = streams.value.log
+        val classpath = (fullClasspath in Compile).value.files.map(_.toURI.toURL).toArray
+        val classloader = new java.net.URLClassLoader(classpath, getClass().getClassLoader())
+        val scanner = new FastClasspathScanner("akka").addClassLoader(classloader).scan()
+        val allClasses = scanner.getNamesOfAllClasses.asScala.toVector
+        Def.task { Seq(
+          { context: Writer.Context ⇒ new SignatureDirective(context, msg ⇒ log.warn(msg)) },
+          { _: Writer.Context ⇒ new UnidocDirective(allClasses) }
+        )}
+      }.value
+    )
+  )
 
 def hasCommitsAfterTag(description: Option[GitDescribeOutput]): Boolean = description.get.commitSuffix.distance > 0

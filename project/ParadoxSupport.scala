@@ -6,43 +6,17 @@ package akka
 
 import java.io.{File, FileNotFoundException}
 
-import sbt._
-import Keys._
-import com.lightbend.paradox._
 import com.lightbend.paradox.markdown._
-import com.lightbend.paradox.sbt.ParadoxPlugin.autoImport._
 import org.pegdown.Printer
 import org.pegdown.ast.{DirectiveNode, HtmlBlockNode, TextNode, VerbatimNode, Visitor}
 
 import scala.collection.JavaConverters._
 import scala.io.{Codec, Source}
 
-import _root_.io.github.lukehutch.fastclasspathscanner.FastClasspathScanner
-import _root_.io.github.lukehutch.fastclasspathscanner.scanner.ScanResult
-
-
 object ParadoxSupport {
-  val paradoxWithCustomDirectives = Seq(
-    paradoxDirectives ++= Def.taskDyn {
-      val log = streams.value.log
-      val classpath = (fullClasspath in Compile).value.files.map(_.toURI.toURL).toArray
-      val classloader = new java.net.URLClassLoader(classpath, this.getClass().getClassLoader())
-      lazy val scanner = new FastClasspathScanner("akka").addClassLoader(classloader).scan()
-      val allClasses = scanner.getNamesOfAllClasses.asScala.toVector
-      val directives = paradoxDirectives.value
-      Def.task { Seq(
-        { context: Writer.Context ⇒
-            new SignatureDirective(context.location.tree.label, context.properties, msg ⇒ log.warn(msg))
-        },
-        { context: Writer.Context ⇒ {
-            new UnidocDirective(allClasses)
-          }
-        },
-      )}
-    }.value
-  )
 
   class UnidocDirective(allClasses: IndexedSeq[String]) extends InlineDirective("unidoc") {
+
     def render(node: DirectiveNode, visitor: Visitor, printer: Printer): Unit = {
       if (node.label.split('[')(0).contains('.')) {
         val fqcn = node.label
@@ -99,7 +73,11 @@ object ParadoxSupport {
     }
   }
 
-  class SignatureDirective(page: Page, variables: Map[String, String], logWarn: String => Unit) extends LeafBlockDirective("signature") {
+  class SignatureDirective(context: Writer.Context, logWarn: String => Unit) extends LeafBlockDirective("signature") {
+    val page: Page = context.location.tree.label
+
+    val variables: Map[String, String] = context.properties
+
     def render(node: DirectiveNode, visitor: Visitor, printer: Printer): Unit =
       try {
         val labels = node.attributes.values("identifier").asScala.map(_.toLowerCase())

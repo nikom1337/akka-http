@@ -58,6 +58,7 @@ object Dependencies {
       val sprayJson   = Compile.sprayJson                                                                    % "test"
       val gson        = "com.google.code.gson"             % "gson"                    % "2.8.2"             % "test"
       val jacksonXml  = "com.fasterxml.jackson.dataformat" % "jackson-dataformat-xml"  % jacksonVersion      % "test" // ApacheV2
+      val paradox     = "com.lightbend.paradox" %% "paradox" % "0.3.2"
     }
 
     object Test {
@@ -114,7 +115,7 @@ object Dependencies {
 
   lazy val httpJackson = l ++= Seq(jackson)
 
-  lazy val docs = l ++= Seq(Docs.sprayJson, Docs.gson, Docs.jacksonXml)
+  lazy val docs = l ++= Seq(Docs.sprayJson, Docs.gson, Docs.jacksonXml, Docs.paradox)
 }
 
 
